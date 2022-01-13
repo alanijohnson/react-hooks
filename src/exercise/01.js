@@ -3,12 +3,14 @@
 
 import * as React from 'react'
 
-function Greeting() {
+function Greeting({initialName}) {
   // 💣 delete this variable declaration and replace it with a React.useState call
-  const name = ''
+  console.log(initialName);
+  const [username, setUsername] = React.useState(initialName);
 
   function handleChange(event) {
     // 🐨 update the name here based on event.target.value
+    setUsername(event.target.elements.name.value);
   }
 
   return (
@@ -17,13 +19,13 @@ function Greeting() {
         <label htmlFor="name">Name: </label>
         <input onChange={handleChange} id="name" />
       </form>
-      {name ? <strong>Hello {name}</strong> : 'Please type your name'}
+      {username ? <strong>Hello {username}</strong> : 'Please type your name'}
     </div>
   )
 }
 
 function App() {
-  return <Greeting />
+  return <Greeting initialName="tim"/>
 }
 
 export default App
