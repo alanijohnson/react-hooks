@@ -5,13 +5,41 @@ import * as React from 'react'
 import {useLocalStorageState} from "../utils";
 
 
+
 function Board() {
   // 🐨 squares is the state for this component. Add useState for squares
   const [squares, setSquares] = useLocalStorageState('squares',Array(9).fill(null));
   const nextValue = calculateNextValue(squares);
   const winner = calculateWinner(squares);
   const status = calculateStatus(winner,squares,nextValue);
+  const [history, setHistory] = useLocalStorageState('history', []);
+  const [step, setStep] = useLocalStorageState('step', 0);
 
+  const HistoricalElement = ({historical, disabled = false}) => {
+
+    const revertToStep = (event) => {
+      console.log(event.target.attributes.data.value)
+      const revertStep = parseInt(event.target.attributes.data.value);
+      setSquares(history[revertStep].history)
+      setHistory(history.slice(0, revertStep))
+      setStep(revertStep)
+    }
+
+    return (
+      <>
+        <li key={historical.step}>
+          <button onClick={revertToStep} data={historical.step} disabled={disabled} className="restart">{`Return to ${historical.step === 0 ? "Game Start" : "step "+historical.step}`}</button>
+        </li>
+      </>
+
+    );
+  }
+
+  const History = () => {
+    return (history.map(item => {
+      return <HistoricalElement historical={item}/>
+    }))
+  }
 
   // 🐨 We'll need the following bits of derived state:
   // - nextValue ('X' or 'O')
@@ -26,7 +54,7 @@ function Board() {
     // 🐨 first, if there's already winner or there's already a value at the
     // given square index (like someone clicked a square that's already been
     // clicked), then return early so we don't make any state changes
-    if (winner) {
+    if (winner || squares[square]) {
       return
     }
     // 🦉 It's typically a bad idea to mutate or directly change state in React.
@@ -36,15 +64,15 @@ function Board() {
     // 💰 `[...squares]` will do it!)
     const squaresCopy = [...squares];
     squaresCopy[square] = nextValue;
-    // 🐨 set the value of the square that was selected
-    // 💰 `squaresCopy[square] = nextValue`
-    //
-    // 🐨 set the squares to your copy
     setSquares(squaresCopy);
+    setHistory([...history,{'step': step, 'history': squares}])
+    setStep(step+1);
   }
 
   function restart() {
     setSquares(Array(9).fill(null))
+    setHistory([])
+    setStep(0)
   }
 
   function renderSquare(i) {
@@ -61,6 +89,7 @@ function Board() {
 
   return (
     <div>
+      <div>
       {/* 🐨 put the status in the div below */}
       <div className="status">{status}</div>
       <div className="board-row">
@@ -81,6 +110,13 @@ function Board() {
       <button className="restart" onClick={restart}>
         restart
       </button>
+      </div>
+      <div>
+        <ol>
+          <History/>
+          <HistoricalElement disabled={true} historical={{'step': step}}/>
+        </ol>
+      </div>
     </div>
   )
 }
