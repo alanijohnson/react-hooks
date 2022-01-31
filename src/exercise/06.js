@@ -11,15 +11,25 @@ import {useEffect, useState} from "react";
 
 function PokemonInfo({pokemonName}) {
   const [pokemon, setPokemon] = useState(null);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
+    setError(false);
     if (!pokemonName){
       return
     }
     setPokemon(null);
-    fetchPokemon(pokemonName).then(
-      pokemonData => {setPokemon(pokemonData)}
-    )
+    const effect = async () => {
+      try {
+        const response = await fetchPokemon(pokemonName);
+        setPokemon(response)
+      } catch {
+        setError(true)
+      }
+
+
+    }
+    effect()
   }, [pokemonName]);
 
   if (!pokemonName) {
@@ -27,6 +37,11 @@ function PokemonInfo({pokemonName}) {
   }
 
   if (!pokemon) {
+    if (error) {
+      return (<div role="alert">
+        There was an error: <pre style={{whiteSpace: 'normal'}}>{error.message}</pre>
+      </div>)
+    }
     return <PokemonInfoFallback name={pokemonName} />
   }
 
