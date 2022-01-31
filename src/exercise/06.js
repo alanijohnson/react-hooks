@@ -11,7 +11,7 @@ import {useEffect, useState} from "react";
 
 function PokemonInfo({pokemonName}) {
   const [pokemon, setPokemon] = useState(null);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     setError(false);
@@ -23,8 +23,8 @@ function PokemonInfo({pokemonName}) {
       try {
         const response = await fetchPokemon(pokemonName);
         setPokemon(response)
-      } catch {
-        setError(true)
+      } catch (e) {
+        setError(e)
       }
 
 
