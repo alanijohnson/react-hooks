@@ -9,6 +9,27 @@ import * as React from 'react'
 import {fetchPokemon, PokemonDataView, PokemonForm, PokemonInfoFallback} from '../pokemon'
 import {useEffect, useState} from "react";
 
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {error: null}
+  }
+  static getDerivedStateFromError(error) {
+    return {error}
+  }
+
+  render() {
+    console.log(this.state.error)
+    if (this.state.error) {
+      return (<div role="alert">
+        There was an error: <pre style={{whiteSpace: 'normal'}}>{this.state.error.message}</pre>
+      </div>)
+    }
+
+    return this.props.children
+  }
+}
+
 function PokemonInfo({pokemonName}) {
   const [infoState, setInfoState] = useState({
     pokemon: null,
@@ -40,9 +61,7 @@ function PokemonInfo({pokemonName}) {
       return <PokemonDataView pokemon={infoState.pokemon} />
 
     case 'rejected':
-      return (<div role="alert">
-        There was an error: <pre style={{whiteSpace: 'normal'}}>{infoState.error.message}</pre>
-      </div>)
+      throw infoState.error
 
     case 'pending':
       return <PokemonInfoFallback name={pokemonName} />
@@ -66,7 +85,9 @@ function App() {
       <PokemonForm pokemonName={pokemonName} onSubmit={handleSubmit} />
       <hr />
       <div className="pokemon-info">
-        <PokemonInfo pokemonName={pokemonName} />
+        <ErrorBoundary>
+          <PokemonInfo pokemonName={pokemonName} />
+        </ErrorBoundary>
       </div>
     </div>
   )
