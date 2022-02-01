@@ -10,39 +10,38 @@ import {fetchPokemon, PokemonDataView, PokemonForm, PokemonInfoFallback} from '.
 import {useEffect, useState} from "react";
 
 function PokemonInfo({pokemonName}) {
-  const [pokemon, setPokemon] = useState(null);
-  const [error, setError] = useState(null);
-  const [status, setStatus] = useState('idle')
+  const [infoState, setInfoState] = useState({
+    pokemon: null,
+    status: 'idle',
+    error: null
+  })
 
   useEffect(() => {
     if (!pokemonName){
       return
     }
-    setPokemon(null);
     const effect = async () => {
       try {
-        setStatus('pending')
+        setInfoState({...infoState, status: "pending"})
         const response = await fetchPokemon(pokemonName);
-        setPokemon(response)
-        setStatus('resolved')
+        setInfoState({...infoState, pokemon: response, status: "resolved"})
       } catch (e) {
-        setError(e)
-        setStatus('rejected')
+        setInfoState({...infoState, error: e, status: "rejected"})
       }
     }
     effect()
   }, [pokemonName]);
 
-  switch (status) {
+  switch (infoState.status) {
     case 'idle':
       return 'Submit a pokemon'
 
     case 'resolved':
-      return <PokemonDataView pokemon={pokemon} />
+      return <PokemonDataView pokemon={infoState.pokemon} />
 
     case 'rejected':
       return (<div role="alert">
-        There was an error: <pre style={{whiteSpace: 'normal'}}>{error.message}</pre>
+        There was an error: <pre style={{whiteSpace: 'normal'}}>{infoState.error.message}</pre>
       </div>)
 
     case 'pending':
